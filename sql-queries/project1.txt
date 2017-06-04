@@ -1,0 +1,305 @@
+Project: 1
+Name: Adity Mhamunkar
+B#: B00670015
+
+Honesty Policy:
+“I have done this assignment completely on my own. I have not copied it, nor have I given
+my solution to anyone else. I understand that if I am involved in plagiarism or cheating I will have to
+sign an official form that I have cheated and that this form will be stored in my official university
+record. I also understand that I will receive a grade of 0 for the involved assignment for my first offense
+and that I will receive a grade of “F” for the course for any additional offense.”
+
+
+
+
+
+
+SQL> start p1q1
+SQL> SELECT (c.dept_code || c.course#) AS course_id,
+  2         c.title
+  3  FROM courses c,
+  4       classes l
+  5  WHERE c.dept_code = l.dept_code
+  6    AND c.course# = l.course# and year = 2016 and semester = 'Spring';
+
+COURSE_ID                                    TITLE
+-------------------------------------------- --------------------
+CS432                                        database systems
+CS240                                        data structure
+Math221                                      calculus I
+CS532                                        database systems
+
+SQL> start p1q2
+SQL> select distinct s.b#, s.firstname, s.lastname, s.gpa from students s, enrollments e
+  2  where s.b# = e.b# and e.b#
+  3  in
+  4  (select e2.b# from enrollments e2, classes c2 where c2.classid = e2.classid and c2.dept_code = 'CS' and e2.b#
+  5  in
+  6  (select e3.b# from enrollments e3, classes c3 where c3.classid = e3.classid and c3.dept_code = 'Math'));
+
+B#   FIRSTNAME       LASTNAME               GPA
+---- --------------- --------------- ----------
+B001 Anne            Broder                3.17
+
+SQL> start p1q3
+SQL> select dept_code, course# from classes where classid not in (select classid from classes where year = 2015 and
+  2  semester = 'Fall');
+
+DEPT    COURSE#
+---- ----------
+CS          240
+CS          432
+CS          432
+Math        221
+CS          532
+
+SQL> start p1q4
+SQL> select distinct s.b#, s.firstname, s.lastname, s.gpa from students s, enrollments e where s.b# = e.b# and
+  2  lgrade in ('B-','C+','C','C-','D','F');
+
+B#   FIRSTNAME       LASTNAME               GPA
+---- --------------- --------------- ----------
+B001 Anne            Broder                3.17
+B004 Barbara         Callan                 2.5
+
+SQL> start p1q5
+SQL> select distinct (s.firstname || ' ' || s.lastname) as name from students s, enrollments e where s.b# = e.b# and
+  2  s.b# not in (select e.b# from enrollments e where e.lgrade = 'A');
+
+NAME
+-------------------------------
+Terry Buttler
+Jack Smith
+Barbara Callan
+
+SQL> start p1q6
+SQL> select distinct e1.b# as student_b#, c1.faculty_b# from faculty f1, enrollments e1, classes c1, students
+  2  s1 where
+  3  e1.classid = c1.classid and
+  4  s1.b# = e1.b# and
+  5  s1.deptname <> c1.dept_code;
+
+STUD FACU
+---- ----
+B001 B103
+B007 B105
+B006 B102
+B004 B104
+B004 B101
+
+SQL> start p1q7
+SQL> select dept_code, course# from (select course#, dept_code, count(course#) as counter from classes group by
+  2  course#, dept_code) having
+  3  counter = (select max (counter) from (select count(course#) as counter from classes group by course#));
+
+DEPT    COURSE#
+---- ----------
+CS          432
+Math        314
+
+SQL> start p1q8
+SQL> select classid, dept_code, course#, (limit - class_size) as seats_available from classes where semester =
+  2  'Spring' and year = 2016 and (limit - class_size) > 0;
+
+CLASS DEPT    COURSE# SEATS_AVAILABLE
+----- ---- ---------- ---------------
+c0005 CS          240               1
+c0001 CS          432               1
+c0006 CS          532               1
+
+SQL> start p1q9
+SQL> select s.* from students s, (select b# from (select b#, count(b#) as counter from enrollments group by b#) where
+  2  counter > 3) temp where s.b# = temp.b#;
+
+B#   FIRSTNAME       LASTNAME        STATUS            GPA EMAIL
+---- --------------- --------------- ---------- ---------- --------------------
+BDATE     DEPT
+--------- ----
+B001 Anne            Broder          junior           3.17 broder@bu.edu
+17-JAN-90 CS
+
+SQL> start p1q10
+SQL> select c1.* from classes c1 where c1.classid in (select classid from (select classid, count (classid) as counter
+  2  from enrollments group by classid) temp
+  3  where
+  4  c1.year = 2016 and
+  5  c1.semester = 'Spring' and
+  6  c1.dept_code = 'CS' and
+  7  temp.counter < 3);
+
+CLASS DEPT    COURSE#      SECT#       YEAR SEMESTER      LIMIT CLASS_SIZE FACU
+----- ---- ---------- ---------- ---------- -------- ---------- ---------- ----
+c0001 CS          432          1       2016 Spring           35         34 B101
+
+SQL> start p1q11
+SQL> select b#, firstname from students s
+  2  where not exists
+  3  (select * from (select cr.dept_code, cr.course# from courses cr where cr.course#
+  4   between 400 and 499 and cr.dept_code = 'CS') temp
+  5   where not exists
+  6    (select * from (select b#, dept_code, course# from enrollments, classes where classes.classid =
+  7  enrollments.classid)
+  8    where b# = s.b#
+  9    and dept_code = temp.dept_code
+ 10    and course# = temp.course#));
+
+B#   FIRSTNAME
+---- ---------------
+B001 Anne
+B003 Tracy
+B004 Barbara
+
+SQL> start p1q12
+SQL> select c1.title from courses c1,
+  2  ((select distinct c.dept_code, c.course# from classes c, (select classid from enrollments where b# = 'B001')
+  3  temp where temp.classid = c.classid)
+  4  minus
+  5  (select distinct c.dept_code, c.course# from classes c, (select classid from enrollments where b# = 'B002') temp
+  6  where temp.classid = c.classid)) temp2
+  7  where temp2.dept_code = c1.dept_code and temp2.course# = c1.course#;
+
+TITLE
+--------------------
+data structure
+database systems
+database systems
+
+SQL> start p1q13
+SQL> select s.firstname from students s,
+  2  (select e2.b# from enrollments e2,
+  3  (select distinct c1.classid, c1.dept_code, c1.course# from classes c1, (select classid from enrollments) temp1
+  4  where temp1.classid = c1.classid) table1,
+  5  (select distinct c.classid, c.dept_code, c.course# from classes c, (select classid from enrollments where b# =
+  6  'B005') temp
+  7  where temp.classid = c.classid) table2
+  8  where
+  9  e2.classid = table1.classid and
+ 10  table1.classid = table2.classid) maintable1
+ 11  where
+ 12  s.b# = maintable1.b#;
+
+FIRSTNAME
+---------------
+Anne
+Jack
+Terry
+
+SQL> start p1q14
+SQL> select distinct c1.dept_code, c1.course#, c1.semester, c1.year from classes c1, classes c2
+  2  where c1.course# = c2.course# and
+  3  c1.dept_code = c2.dept_code and
+  4  c1.classid <> c2.classid and
+  5  c1.year = c2.year and
+  6  c1.semester = c2.semester;
+
+DEPT    COURSE# SEMESTER       YEAR
+---- ---------- -------- ----------
+Math        314 Fall           2015
+
+SQL> start p1q15
+SQL> select distinct s1.b#, s1.firstname from students s1, enrollments e1,
+  2  (select temp1.classid, gg.lgrade from grades gg,
+  3  (select e.classid, max(g.ngrade) max_ngrade from enrollments e, grades g where e.lgrade =
+  4  g.lgrade group by e.classid) temp1
+  5  where temp1.max_ngrade = gg.ngrade) temp2
+  6  where e1.classid = temp2.classid
+  7  and e1.lgrade = temp2.lgrade
+  8  and e1.b# = s1.b#
+  9  ;
+
+B#   FIRSTNAME
+---- ---------------
+B007 Becky
+B003 Tracy
+B002 Terry
+B004 Barbara
+B006 Terry
+B001 Anne
+
+6 rows selected.
+
+SQL> start p1q16
+SQL> select cr.dept_code, cr.course#, cr.title, nvl(e.lgrade,'to be assigned') grade from enrollments e, classes
+  2  c, courses cr where e.b# = 'B003' and c.classid = e.classid and c.dept_code = cr.dept_code and c.course# =
+  3  cr.course#;
+
+DEPT    COURSE# TITLE                GRADE
+---- ---------- -------------------- --------------
+CS          432 database systems     I
+CS          432 database systems     A
+CS          240 data structure       to be assigned
+
+SQL> start p1q17
+SQL> select distinct temp1.dept_code, temp1.course#, temp1.title from
+  2  (select c.classid, cr.dept_code, cr.course#, cr.title from classes c, courses cr where c.dept_code =
+  3  cr.dept_code and c.course# = cr.course# and cr.title like '%systems%') temp1,
+  4  (select e.classid from students s, enrollments e where s.b# = e.b# and s.gpa > 3.25) temp2
+  5  where
+  6  temp1.classid = temp2.classid;
+
+DEPT    COURSE# TITLE
+---- ---------- --------------------
+CS          432 database systems
+CS          532 database systems
+
+SQL> start p1q18
+SQL> select s.b#, s.firstname, nvl(maintable.total_credits, 0) credits from students s,
+  2  (select e.b#, sum(class_credit.credits) total_credits from enrollments e,
+  3  (select c.classid, cc.credits from classes c, course_credit cc where c.course# =
+  4  cc.course#) class_credit
+  5  where e.classid = class_credit.classid and
+  6  e.lgrade is not null
+  7  group by e.b#) maintable
+  8  where s.b# = maintable.b#(+);
+
+B#   FIRSTNAME          CREDITS
+---- --------------- ----------
+B001 Anne                    23
+B002 Terry                    4
+B003 Tracy                    8
+B004 Barbara                  8
+B005 Jack                     3
+B006 Terry                    3
+B007 Becky                    4
+B008 Tom                      0
+
+8 rows selected.
+
+SQL> start p1q19
+SQL> select avg(total_credits) from
+  2  (select e.b#, sum(class_credit.credits) total_credits from enrollments e,
+  3  (select c.classid, cc.credits from classes c, course_credit cc where c.course# =
+  4  cc.course#) class_credit
+  5  where e.classid = class_credit.classid and
+  6  e.lgrade is not null
+  7  group by e.b#);
+
+AVG(TOTAL_CREDITS)
+------------------
+        7.57142857
+
+SQL> start p1q20
+SQL> select s.b#, nvl(maintable.cgpa1, null) cgpa from students s,
+  2  (select temp1.b#, (temp2.sum_grades/temp1.class_count) cgpa1 from
+  3  (select e.b#, count(e.classid) class_count from enrollments e, grades g where g.lgrade = e.lgrade and
+  4  g.ngrade is not null and e.lgrade is not null group by b#) temp1,
+  5  (select e.b#, sum(g.ngrade) sum_grades from enrollments e, grades g where e.lgrade = g.lgrade and g.ngrade is
+  6  not null and
+  7  e.lgrade is not null group by e.b#) temp2
+  8  where
+  9  temp1.b# = temp2.b#) maintable
+ 10  where s.b# = maintable.b# (+)
+ 11  order by cgpa desc nulls last;
+
+B#         CGPA
+---- ----------
+B003          4
+B007          4
+B006          4
+B001 3.16666667
+B002          3
+B005          3
+B004       2.65
+B008
+
+8 rows selected.
