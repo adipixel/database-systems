@@ -1,3 +1,4 @@
 # Database Projects
 
-This includes SQL and PL/SQL projects
+This repository contains the SQL work done using *Oracle*.
+It demostrate complex queries with all operations possible using SQL.
